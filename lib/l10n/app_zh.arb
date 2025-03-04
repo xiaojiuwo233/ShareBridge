@@ -1,0 +1,166 @@
+{
+  "appName": "ShareBridge",
+  "@appName": {
+    "description": "应用名称"
+  },
+
+  "timeline": "时间线",
+  "@timeline": {
+    "description": "时间线标签"
+  },
+
+  "settings": "设置",
+  "@settings": {
+    "description": "设置标签"
+  },
+
+  "share": "分享",
+  "@share": {
+    "description": "分享按钮文本"
+  },
+
+  "cancel": "取消",
+  "@cancel": {
+    "description": "取消按钮文本"
+  },
+
+  "delete": "删除",
+  "@delete": {
+    "description": "删除按钮文本"
+  },
+
+  "edit": "编辑",
+  "@edit": {
+    "description": "编辑按钮文本"
+  },
+
+  "pin": "固定",
+  "@pin": {
+    "description": "固定按钮文本"
+  },
+
+  "unpin": "取消固定",
+  "@unpin": {
+    "description": "取消固定按钮文本"
+  },
+
+  "recordHistory": "记录历史",
+  "@recordHistory": {
+    "description": "记录历史选项文本"
+  },
+
+  "deleteSourceFile": "分享后删除源文件",
+  "@deleteSourceFile": {
+    "description": "删除源文件选项文本"
+  },
+
+  "themeSettings": "主题设置",
+  "@themeSettings": {
+    "description": "主题设置标题"
+  },
+
+  "systemTheme": "跟随系统",
+  "@systemTheme": {
+    "description": "系统主题选项"
+  },
+
+  "lightTheme": "浅色",
+  "@lightTheme": {
+    "description": "浅色主题选项"
+  },
+
+  "darkTheme": "深色",
+  "@darkTheme": {
+    "description": "深色主题选项"
+  },
+
+  "previewSettings": "预览设置",
+  "@previewSettings": {
+    "description": "预览设置标题"
+  },
+
+  "dialogPreview": "弹窗预览",
+  "@dialogPreview": {
+    "description": "弹窗预览选项"
+  },
+
+  "fullScreenPreview": "全屏预览",
+  "@fullScreenPreview": {
+    "description": "全屏预览选项"
+  },
+
+  "languageSettings": "语言设置",
+  "@languageSettings": {
+    "description": "语言设置标题"
+  },
+
+  "systemLanguage": "跟随系统",
+  "@systemLanguage": {
+    "description": "系统语言选项"
+  },
+
+  "shareProviderSettings": "分享提供者设置",
+  "@shareProviderSettings": {
+    "description": "分享提供者设置标题"
+  },
+
+  "about": "关于",
+  "@about": {
+    "description": "关于页面标题"
+  },
+
+  "version": "版本",
+  "@version": {
+    "description": "版本标签"
+  },
+
+  "sourceCode": "源代码",
+  "@sourceCode": {
+    "description": "源代码链接文本"
+  },
+
+  "license": "许可证",
+  "@license": {
+    "description": "许可证链接文本"
+  },
+
+  "noHistory": "暂无分享历史",
+  "@noHistory": {
+    "description": "无历史记录时显示的文本"
+  },
+
+  "confirmDelete": "确认删除",
+  "@confirmDelete": {
+    "description": "删除确认对话框标题"
+  },
+
+  "confirmDeleteMessage": "确定要删除这条记录吗？",
+  "@confirmDeleteMessage": {
+    "description": "删除确认对话框内容"
+  },
+
+  "ok": "确定",
+  "@ok": {
+    "description": "确定按钮文本"
+  },
+
+  "error": "错误",
+  "@error": {
+    "description": "错误提示标题"
+  },
+
+  "shareError": "分享失败",
+  "@shareError": {
+    "description": "分享失败提示"
+  },
+
+  "fileNotFound": "文件不存在",
+  "@fileNotFound": {
+    "description": "文件不存在提示"
+  },
+
+  "copied": "已复制",
+  "@copied": {
+    "description": "复制成功提示"
+  }
+} 

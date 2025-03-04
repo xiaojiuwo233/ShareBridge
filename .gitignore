@@ -20,7 +20,7 @@ migrate_working_dir/
 .vscode/
 .cursor/
 /dev_docs.md
-
+/index.md
 
 # Flutter/Dart/Pub related
 .dart_tool/

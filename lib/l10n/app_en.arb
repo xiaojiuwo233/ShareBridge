@@ -1,0 +1,166 @@
+{
+  "appName": "ShareBridge",
+  "@appName": {
+    "description": "Application name"
+  },
+
+  "timeline": "Timeline",
+  "@timeline": {
+    "description": "Timeline tab label"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+
+  "share": "Share",
+  "@share": {
+    "description": "Share button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button text"
+  },
+
+  "pin": "Pin",
+  "@pin": {
+    "description": "Pin button text"
+  },
+
+  "unpin": "Unpin",
+  "@unpin": {
+    "description": "Unpin button text"
+  },
+
+  "recordHistory": "Record History",
+  "@recordHistory": {
+    "description": "Record history option text"
+  },
+
+  "deleteSourceFile": "Delete Source File After Sharing",
+  "@deleteSourceFile": {
+    "description": "Delete source file option text"
+  },
+
+  "themeSettings": "Theme Settings",
+  "@themeSettings": {
+    "description": "Theme settings title"
+  },
+
+  "systemTheme": "System",
+  "@systemTheme": {
+    "description": "System theme option"
+  },
+
+  "lightTheme": "Light",
+  "@lightTheme": {
+    "description": "Light theme option"
+  },
+
+  "darkTheme": "Dark",
+  "@darkTheme": {
+    "description": "Dark theme option"
+  },
+
+  "previewSettings": "Preview Settings",
+  "@previewSettings": {
+    "description": "Preview settings title"
+  },
+
+  "dialogPreview": "Dialog Preview",
+  "@dialogPreview": {
+    "description": "Dialog preview option"
+  },
+
+  "fullScreenPreview": "Full Screen Preview",
+  "@fullScreenPreview": {
+    "description": "Full screen preview option"
+  },
+
+  "languageSettings": "Language Settings",
+  "@languageSettings": {
+    "description": "Language settings title"
+  },
+
+  "systemLanguage": "System",
+  "@systemLanguage": {
+    "description": "System language option"
+  },
+
+  "shareProviderSettings": "Share Provider Settings",
+  "@shareProviderSettings": {
+    "description": "Share provider settings title"
+  },
+
+  "about": "About",
+  "@about": {
+    "description": "About page title"
+  },
+
+  "version": "Version",
+  "@version": {
+    "description": "Version label"
+  },
+
+  "sourceCode": "Source Code",
+  "@sourceCode": {
+    "description": "Source code link text"
+  },
+
+  "license": "License",
+  "@license": {
+    "description": "License link text"
+  },
+
+  "noHistory": "No Share History",
+  "@noHistory": {
+    "description": "Text shown when no history records"
+  },
+
+  "confirmDelete": "Confirm Delete",
+  "@confirmDelete": {
+    "description": "Delete confirmation dialog title"
+  },
+
+  "confirmDeleteMessage": "Are you sure you want to delete this record?",
+  "@confirmDeleteMessage": {
+    "description": "Delete confirmation dialog content"
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+
+  "error": "Error",
+  "@error": {
+    "description": "Error alert title"
+  },
+
+  "shareError": "Share Failed",
+  "@shareError": {
+    "description": "Share error message"
+  },
+
+  "fileNotFound": "File Not Found",
+  "@fileNotFound": {
+    "description": "File not found message"
+  },
+
+  "copied": "Copied",
+  "@copied": {
+    "description": "Copy success message"
+  }
+} 

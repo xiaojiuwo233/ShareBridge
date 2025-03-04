@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '1.9.22'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -5,12 +18,47 @@ allprojects {
     }
 }
 
-rootProject.buildDir = "../build"
+rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(':app')
 }
-subprojects {
-    project.evaluationDependsOn(":app")
+
+// 使用 gradle.projectsEvaluated 代替 afterEvaluate
+gradle.projectsEvaluated {
+    rootProject.subprojects { subproject ->
+        if (subproject.hasProperty('android')) {
+            // 设置Android项目的Java编译选项
+            subproject.android.compileOptions {
+                sourceCompatibility JavaVersion.VERSION_11
+                targetCompatibility JavaVersion.VERSION_11
+            }
+            
+            // 设置Kotlin编译选项
+            if (subproject.plugins.hasPlugin('kotlin-android')) {
+                subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                    kotlinOptions {
+                        jvmTarget = '11'
+                    }
+                }
+            }
+            
+            // 统一编译目标版本，解决冲突
+            if (subproject.name == 'image_editor_common' || subproject.name == 'shared_preferences_android' || 
+                subproject.name == 'receive_sharing_intent') {
+                subproject.android.compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_11
+                    targetCompatibility JavaVersion.VERSION_11
+                }
+                
+                subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                    kotlinOptions {
+                        jvmTarget = '11'
+                    }
+                }
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
