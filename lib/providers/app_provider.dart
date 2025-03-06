@@ -144,6 +144,22 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // 更新主题颜色模式
+  Future<void> updateThemeColorMode(ThemeColorMode mode) async {
+    if (_settings.themeColorMode == mode) return;
+    _settings = _settings.copyWith(themeColorMode: mode);
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  // 更新自定义主题色
+  Future<void> updateCustomThemeColor(Color color) async {
+    if (_settings.customThemeColor == color) return;
+    _settings = _settings.copyWith(customThemeColor: color);
+    await _saveSettings();
+    notifyListeners();
+  }
+
   // 更新预览模式
   Future<void> updatePreviewMode(PreviewMode mode) async {
     if (_settings.previewMode == mode) return;

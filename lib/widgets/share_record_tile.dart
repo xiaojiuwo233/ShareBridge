@@ -110,14 +110,20 @@ class ShareRecordTile extends StatelessWidget {
         title = '未知类型';
     }
 
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      ),
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: colorScheme.primary,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        );
+      }
     );
   }
 
@@ -125,12 +131,17 @@ class ShareRecordTile extends StatelessWidget {
     final sourceApp = record.sourceApp ?? '未知来源';
     final timeAgo = app_date.DateUtils.formatTimeAgo(record.timestamp);
     
-    return Text(
-      '$sourceApp · $timeAgo',
-      style: TextStyle(
-        fontSize: 12,
-        color: Colors.grey[600],
-      ),
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Text(
+          '$sourceApp · $timeAgo',
+          style: TextStyle(
+            fontSize: 12,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        );
+      }
     );
   }
 

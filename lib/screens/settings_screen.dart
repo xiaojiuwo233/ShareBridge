@@ -1,24 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/app_provider.dart';
 import '../models/app_settings.dart';
 import 'share_providers_screen.dart';
+import 'theme_settings_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _appVersion = '1.0.0';
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadAppInfo();
+  }
+  
+  Future<void> _loadAppInfo() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      setState(() {
+        _appVersion = packageInfo.version;
+      });
+    } catch (e) {
+      debugPrint('Error loading app info: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, child) {
+        final colorScheme = Theme.of(context).colorScheme;
+        
         return ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
             _buildSettingsGroup(
               context,
               '外观',
-              [_buildThemeSettings(context, provider)],
+              [
+                _buildThemeSettingsButton(context),
+              ],
             ),
             _buildSettingsGroup(
               context,
@@ -32,7 +62,28 @@ class SettingsScreen extends StatelessWidget {
             _buildSettingsGroup(
               context,
               '关于',
-              [_buildAboutSection(context)],
+              [
+                ListTile(
+                  leading: Icon(Icons.info_outline,
+                      color: colorScheme.primary),
+                  title: Text('关于', style: TextStyle(color: colorScheme.onSurface)),
+                  subtitle: Text('ShareBridge v$_appVersion', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                ),
+                ListTile(
+                  leading: Icon(Icons.code_outlined,
+                      color: colorScheme.primary),
+                  title: Text('源代码', style: TextStyle(color: colorScheme.onSurface)),
+                  subtitle: Text('跳转到Github查看', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                  trailing: Icon(Icons.open_in_new,
+                      size: 18, color: colorScheme.primary),
+                  onTap: () async {
+                    final Uri url = Uri.parse('https://github.com/xiaojiuwo233/ShareBridge');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         );
@@ -41,6 +92,8 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsGroup(BuildContext context, String title, List<Widget> children) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -48,8 +101,9 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+            style: TextStyle(
+              color: colorScheme.primary,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -59,38 +113,30 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeSettings(BuildContext context, AppProvider provider) {
+  Widget _buildThemeSettingsButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
-      leading: const Icon(Icons.palette_outlined),
+      leading: Icon(Icons.palette_outlined, color: colorScheme.primary),
       title: const Text('主题设置'),
-      trailing: DropdownButton<ThemeMode>(
-        value: provider.settings.themeMode,
-        items: const [
-          DropdownMenuItem(
-            value: ThemeMode.system,
-            child: Text('跟随系统'),
+      subtitle: const Text('自定义应用的外观'),
+      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ThemeSettingsScreen(),
           ),
-          DropdownMenuItem(
-            value: ThemeMode.light,
-            child: Text('浅色'),
-          ),
-          DropdownMenuItem(
-            value: ThemeMode.dark,
-            child: Text('深色'),
-          ),
-        ],
-        onChanged: (ThemeMode? mode) {
-          if (mode != null) {
-            provider.updateThemeMode(mode);
-          }
-        },
-      ),
+        );
+      },
     );
   }
 
   Widget _buildPreviewSettings(BuildContext context, AppProvider provider) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
-      leading: const Icon(Icons.preview_outlined),
+      leading: Icon(Icons.preview_outlined, color: colorScheme.primary),
       title: const Text('预览设置'),
       trailing: DropdownButton<PreviewMode>(
         value: provider.settings.previewMode,
@@ -114,8 +160,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildLanguageSettings(BuildContext context, AppProvider provider) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
-      leading: const Icon(Icons.language_outlined),
+      leading: Icon(Icons.language_outlined, color: colorScheme.primary),
       title: const Text('语言设置'),
       trailing: DropdownButton<String?>(
         value: provider.settings.selectedLanguage,
@@ -141,10 +189,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildShareProviderSettingsButton(BuildContext context, AppProvider provider) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
-      leading: const Icon(Icons.share_outlined),
+      leading: Icon(Icons.share_outlined, color: colorScheme.primary),
       title: const Text('分享提供者设置'),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
       onTap: () {
         Navigator.push(
           context,
@@ -153,30 +203,6 @@ class SettingsScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAboutSection(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.info_outline),
-          title: const Text('关于'),
-          subtitle: const Text('ShareBridge v1.0.0'),
-        ),
-        ListTile(
-          leading: const Icon(Icons.code_outlined),
-          title: const Text('源代码'),
-          subtitle: const Text('跳转到Github查看'),
-          trailing: const Icon(Icons.open_in_new, size: 18),
-          onTap: () async {
-            final Uri url = Uri.parse('https://github.com/xiaojiuwo233/ShareBridge');
-            if (await canLaunchUrl(url)) {
-              await launchUrl(url);
-            }
-          },
-        ),
-      ],
     );
   }
 } 

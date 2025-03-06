@@ -18,6 +18,7 @@ class HomeScreen extends StatelessWidget {
       builder: (context, provider, child) {
         final pinnedRecords = provider.pinnedRecords;
         final unpinnedRecords = provider.unpinnedRecords;
+        final colorScheme = Theme.of(context).colorScheme;
         
         if (provider.history.isEmpty) {
           return const Center(
@@ -29,13 +30,14 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             if (pinnedRecords.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   '已固定',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -52,13 +54,14 @@ class HomeScreen extends StatelessWidget {
               const Divider(height: 32),
             ],
             if (unpinnedRecords.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   '时间线',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -140,22 +143,14 @@ class HomeScreen extends StatelessWidget {
               
               // 日期文本区域
               Expanded(
-                child: Card(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  elevation: 0,
-                  margin: const EdgeInsets.only(left: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: Text(
-                      _formatDateHeader(date),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    _formatDateHeader(date),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
                     ),
                   ),
                 ),
@@ -239,24 +234,25 @@ class HomeScreen extends StatelessWidget {
 
   void _showActionMenu(BuildContext context, ShareRecord record, AppProvider provider) {
     final shareService = ShareService();
+    final colorScheme = Theme.of(context).colorScheme;
     
     // 检查文件是否存在
     shareService.isFileExists(record).then((fileExists) {
       showDialog(
         context: context,
         builder: (context) => SimpleDialog(
-          title: const Text('操作'),
+          title: Text('操作', style: TextStyle(color: colorScheme.primary)),
           children: [
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 _showRecordDetails(context, record);
               },
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline),
-                  SizedBox(width: 16),
-                  Text('查看详情'),
+                  Icon(Icons.info_outline, color: colorScheme.primary),
+                  const SizedBox(width: 16),
+                  Text('查看详情', style: TextStyle(color: colorScheme.onSurface)),
                 ],
               ),
             ),
@@ -274,11 +270,11 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.image),
-                    SizedBox(width: 16),
-                    Text('查看大图'),
+                    Icon(Icons.image, color: colorScheme.primary),
+                    const SizedBox(width: 16),
+                    Text('查看大图', style: TextStyle(color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -289,11 +285,11 @@ class HomeScreen extends StatelessWidget {
                   Navigator.pop(context);
                   ShareService().showPreviewDialog(context, record);
                 },
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.edit),
-                    SizedBox(width: 16),
-                    Text('编辑'),
+                    Icon(Icons.edit, color: colorScheme.primary),
+                    const SizedBox(width: 16),
+                    Text('编辑', style: TextStyle(color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -304,11 +300,11 @@ class HomeScreen extends StatelessWidget {
                   Navigator.pop(context);
                   ShareService().share(record);
                 },
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.share),
-                    SizedBox(width: 16),
-                    Text('分享'),
+                    Icon(Icons.share, color: colorScheme.primary),
+                    const SizedBox(width: 16),
+                    Text('分享', style: TextStyle(color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -321,9 +317,15 @@ class HomeScreen extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(record.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+                    Icon(
+                      record.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      color: colorScheme.primary
+                    ),
                     const SizedBox(width: 16),
-                    Text(record.isPinned ? '取消固定' : '固定'),
+                    Text(
+                      record.isPinned ? '取消固定' : '固定',
+                      style: TextStyle(color: colorScheme.onSurface)
+                    ),
                   ],
                 ),
               ),
@@ -333,16 +335,16 @@ class HomeScreen extends StatelessWidget {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('确认删除'),
-                    content: const Text('确定要删除这条记录吗？'),
+                    title: Text('确认删除', style: TextStyle(color: colorScheme.primary)),
+                    content: Text('确定要删除这条记录吗？', style: TextStyle(color: colorScheme.onSurface)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('取消'),
+                        child: Text('取消', style: TextStyle(color: colorScheme.primary)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('删除'),
+                        child: Text('删除', style: TextStyle(color: colorScheme.error)),
                       ),
                     ],
                   ),
@@ -362,11 +364,11 @@ class HomeScreen extends StatelessWidget {
                   await provider.deleteShareRecord(record.id);
                 }
               },
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 16),
-                  Text('删除', style: TextStyle(color: Colors.red)),
+                  Icon(Icons.delete, color: colorScheme.error),
+                  const SizedBox(width: 16),
+                  Text('删除', style: TextStyle(color: colorScheme.error)),
                 ],
               ),
             ),
@@ -377,10 +379,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showRecordDetails(BuildContext context, ShareRecord record) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('详细信息'),
+        title: Text('详细信息', style: TextStyle(color: colorScheme.primary)),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +405,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('关闭'),
+            child: Text('关闭', style: TextStyle(color: colorScheme.primary)),
           ),
         ],
       ),
@@ -409,25 +413,34 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDetailItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 

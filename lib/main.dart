@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/share_service.dart';
 import 'utils/theme_utils.dart';
+import 'models/app_settings.dart';
 
 // 全局错误处理
 void _handleError(Object error, StackTrace stack) {
@@ -48,28 +49,82 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, child) {
-        return MaterialApp(
-          title: 'ShareBridge',
-          theme: ThemeUtils.getLightTheme(),
-          darkTheme: ThemeUtils.getDarkTheme(),
-          themeMode: provider.settings.themeMode,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('zh'),
-            Locale('en'),
-          ],
-          locale: provider.settings.selectedLanguage != null
-              ? Locale(provider.settings.selectedLanguage!)
-              : null,
-          home: const MainScreen(),
-          debugShowCheckedModeBanner: false, // 移除调试标签
+        return FutureBuilder<ThemeData>(
+          future: _createTheme(provider.settings.themeColorMode,
+              provider.settings.customThemeColor, provider.settings.themeMode),
+          builder: (context, snapshot) {
+            // 如果主题还在加载中，使用默认主题
+            if (!snapshot.hasData) {
+              final defaultBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+              return MaterialApp(
+                title: 'ShareBridge',
+                theme: ThemeUtils.getLightTheme(),
+                darkTheme: ThemeUtils.getDarkTheme(),
+                themeMode: provider.settings.themeMode,
+                home: const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                debugShowCheckedModeBanner: false,
+              );
+            }
+            
+            // 加载完成后使用动态主题
+            final lightTheme = snapshot.data;
+            final darkTheme = ThemeUtils.getDarkTheme(
+                seedColor: provider.settings.themeColorMode == ThemeColorMode.custom
+                    ? provider.settings.customThemeColor
+                    : null);
+            
+            return MaterialApp(
+              title: 'ShareBridge',
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: provider.settings.themeMode,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('zh'),
+                Locale('en'),
+              ],
+              locale: provider.settings.selectedLanguage != null
+                  ? Locale(provider.settings.selectedLanguage!)
+                  : null,
+              home: const MainScreen(),
+              debugShowCheckedModeBanner: false, // 移除调试标签
+            );
+          },
         );
       },
     );
+  }
+  
+  // 创建主题
+  Future<ThemeData> _createTheme(
+      ThemeColorMode colorMode, Color customColor, ThemeMode themeMode) async {
+    final brightness = themeMode == ThemeMode.dark
+        ? Brightness.dark
+        : themeMode == ThemeMode.light
+            ? Brightness.light
+            : WidgetsBinding.instance.platformDispatcher.platformBrightness;
+            
+    if (colorMode == ThemeColorMode.system) {
+      return ThemeUtils.createTheme(
+        useDynamicColor: true,
+        seedColor: const Color(0xFF2196F3), // 默认蓝色
+        brightness: brightness,
+      );
+    } else {
+      return ThemeUtils.createTheme(
+        useDynamicColor: false,
+        seedColor: customColor,
+        brightness: brightness,
+      );
+    }
   }
 }
 
@@ -126,9 +181,14 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(_currentIndex == 0 ? 'ShareBridge' : '设置'),
+        title: Text(
+          _currentIndex == 0 ? 'ShareBridge' : '设置',
+          style: TextStyle(color: colorScheme.primary),
+        ),
         centerTitle: true,
       ),
       body: IndexedStack(
