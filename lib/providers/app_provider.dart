@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_settings.dart';
 import '../models/share_record.dart';
+import '../utils/file_utils.dart';
 
 class AppProvider with ChangeNotifier {
   static const String _settingsKey = 'app_settings';
@@ -42,6 +43,10 @@ class AppProvider with ChangeNotifier {
         _loadSettings(),
         _loadHistory(),
       ]);
+      
+      // 清理临时文件
+      _cleanupTempFiles();
+      
       _isInitialized = true;
       debugPrint('AppProvider initialized successfully');
     } catch (e) {
@@ -50,6 +55,18 @@ class AppProvider with ChangeNotifier {
       _settings = const AppSettings();
       _history = [];
       _isInitialized = true;
+    }
+  }
+
+  // 清理临时文件
+  Future<void> _cleanupTempFiles() async {
+    try {
+      // 在后台线程中执行清理，避免阻塞UI
+      FileUtils.cleanupTempFiles().then((_) {
+        debugPrint('Temporary files cleanup completed');
+      });
+    } catch (e) {
+      debugPrint('Error during temp files cleanup: $e');
     }
   }
 

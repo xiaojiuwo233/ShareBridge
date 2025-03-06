@@ -244,6 +244,17 @@ class ShareService {
     debugPrint('Showing preview dialog for: ${record.type}, ${record.content}');
     final provider = Provider.of<AppProvider>(context, listen: false);
     
+    // 检查文件是否存在
+    if ((record.type == ShareType.image || record.type == ShareType.file) && 
+        record.sourcePath != null) {
+      bool fileExists = await FileUtils.exists(record.sourcePath!);
+      if (!fileExists) {
+        debugPrint('File not found: ${record.sourcePath}');
+        await _showFileDeletedDialog(context, record);
+        return;
+      }
+    }
+    
     try {
       await showDialog(
         context: context,
@@ -292,6 +303,53 @@ class ShareService {
     } catch (e) {
       debugPrint('Error showing preview dialog: $e');
     }
+  }
+  
+  // 显示文件已被清理的对话框
+  Future<void> _showFileDeletedDialog(BuildContext context, ShareRecord record) async {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('文件已被清理'),
+        content: const Text('此文件已不存在，可能已被系统或其他应用清理。'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (record.sourcePath != null) {
+                try {
+                  // 确保所有相关临时文件也被清理
+                  await FileUtils.deleteFile(record.sourcePath!);
+                } catch (e) {
+                  debugPrint('Error deleting file references: $e');
+                }
+              }
+              // 删除记录
+              await provider.deleteShareRecord(record.id);
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('删除记录'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 检查分享记录的文件是否存在
+  Future<bool> isFileExists(ShareRecord record) async {
+    if (record.type != ShareType.image && record.type != ShareType.file) {
+      return true; // 文本和URL类型不需要检查文件
+    }
+    
+    if (record.sourcePath == null) {
+      return false;
+    }
+    
+    return await FileUtils.exists(record.sourcePath!);
   }
 
   // 清理资源

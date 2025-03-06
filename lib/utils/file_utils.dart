@@ -26,6 +26,21 @@ class FileUtils {
     }
   }
 
+  /// 获取应用的永久存储目录（用于存储分享文件）
+  static Future<Directory> get sharedFilesDir async {
+    try {
+      final docs = await documentsDir;
+      final sharedDir = Directory('${docs.path}/shared_files');
+      if (!await sharedDir.exists()) {
+        await sharedDir.create(recursive: true);
+      }
+      return sharedDir;
+    } catch (e) {
+      debugPrint('Error getting shared files directory: $e');
+      rethrow;
+    }
+  }
+
   /// 获取文件的MIME类型
   static String? getMimeType(String filePath) {
     if (filePath.isEmpty) return null;
@@ -100,7 +115,44 @@ class FileUtils {
     return mimeType?.startsWith('audio/') ?? false;
   }
 
-  /// 复制文件到应用的文档目录
+  /// 将文件复制到永久存储目录
+  static Future<File?> saveSharedFile(String sourcePath) async {
+    try {
+      if (sourcePath.isEmpty) {
+        throw ArgumentError('Source path cannot be empty');
+      }
+
+      final sourceFile = File(sourcePath);
+      if (!await sourceFile.exists()) {
+        throw FileSystemException('Source file does not exist', sourcePath);
+      }
+
+      // 检查文件大小
+      final fileSize = await sourceFile.length();
+      if (fileSize > 100 * 1024 * 1024) { // 100MB
+        throw const FileSystemException('File too large (max 100MB)');
+      }
+
+      // 获取存储目录
+      final storageDir = await sharedFilesDir;
+      final fileName = path.basename(sourcePath);
+      
+      // 创建带时间戳的文件名，确保唯一性
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final extension = path.extension(fileName);
+      final nameWithoutExt = path.basenameWithoutExtension(fileName);
+      final newFileName = '$nameWithoutExt-$timestamp$extension';
+      final targetPath = path.join(storageDir.path, newFileName);
+      
+      // 复制文件到永久存储目录
+      return await sourceFile.copy(targetPath);
+    } catch (e) {
+      debugPrint('Error saving shared file: $e');
+      return null;
+    }
+  }
+
+  /// 复制文件到应用的文档目录（保留用于兼容现有代码）
   static Future<File?> copyToDocuments(String sourcePath) async {
     try {
       if (sourcePath.isEmpty) {
@@ -118,40 +170,61 @@ class FileUtils {
         throw const FileSystemException('File too large (max 100MB)');
       }
 
-      final docsDir = await documentsDir;
-      final fileName = path.basename(sourcePath);
-      final targetPath = path.join(docsDir.path, fileName);
-      
-      // 如果目标文件已存在，添加时间戳
-      if (await File(targetPath).exists()) {
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final extension = path.extension(fileName);
-        final nameWithoutExt = path.basenameWithoutExtension(fileName);
-        final newFileName = '$nameWithoutExt-$timestamp$extension';
-        final newTargetPath = path.join(docsDir.path, newFileName);
-        return await sourceFile.copy(newTargetPath);
-      }
-
-      return await sourceFile.copy(targetPath);
+      // 直接调用新方法进行永久存储
+      return await saveSharedFile(sourcePath);
     } catch (e) {
       debugPrint('Error copying file: $e');
       return null;
     }
   }
 
-  /// 删除文件
+  /// 删除文件及其所有临时副本
   static Future<bool> deleteFile(String filePath) async {
     try {
       if (filePath.isEmpty) {
         throw ArgumentError('File path cannot be empty');
       }
 
+      bool result = false;
+      
+      // 删除主文件
       final file = File(filePath);
       if (await file.exists()) {
         await file.delete();
-        return true;
+        result = true;
       }
-      return false;
+      
+      // 尝试删除可能存在的临时文件
+      final fileName = path.basename(filePath);
+      
+      // 检查并删除缓存目录中的文件
+      try {
+        final tempDirectory = await tempDir;
+        final tempFilePath = path.join(tempDirectory.path, fileName);
+        final tempFile = File(tempFilePath);
+        if (await tempFile.exists()) {
+          await tempFile.delete();
+        }
+      } catch (e) {
+        debugPrint('Error deleting temp file: $e');
+      }
+      
+      // 检查并删除share_plus缓存目录中的文件
+      try {
+        final tempDirectory = await tempDir;
+        final sharePlusDir = Directory('${tempDirectory.path}/share_plus');
+        if (await sharePlusDir.exists()) {
+          final sharePlusFilePath = path.join(sharePlusDir.path, fileName);
+          final sharePlusFile = File(sharePlusFilePath);
+          if (await sharePlusFile.exists()) {
+            await sharePlusFile.delete();
+          }
+        }
+      } catch (e) {
+        debugPrint('Error deleting share_plus temp file: $e');
+      }
+      
+      return result;
     } catch (e) {
       debugPrint('Error deleting file: $e');
       return false;
@@ -216,6 +289,17 @@ class FileUtils {
               final stat = await entity.stat();
               if (stat.modified.isBefore(yesterday)) {
                 await entity.delete();
+              }
+            } else if (entity is Directory && path.basename(entity.path) == 'share_plus') {
+              // 特别处理share_plus目录
+              final shareFiles = await entity.list().toList();
+              for (var shareFile in shareFiles) {
+                if (shareFile is File) {
+                  final stat = await shareFile.stat();
+                  if (stat.modified.isBefore(yesterday)) {
+                    await shareFile.delete();
+                  }
+                }
               }
             }
           } catch (e) {

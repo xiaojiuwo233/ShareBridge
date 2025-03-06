@@ -7,6 +7,7 @@ import '../models/share_record.dart';
 import '../services/share_service.dart';
 import '../widgets/share_record_tile.dart';
 import '../widgets/image_preview_screen.dart';
+import '../utils/file_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -41,6 +42,7 @@ class HomeScreen extends StatelessWidget {
               ...pinnedRecords.map((record) => ShareRecordTile(
                 record: record,
                 onTap: () {
+                  // 检查文件是否存在，ShareService会处理文件不存在的情况
                   ShareService().showPreviewDialog(context, record);
                 },
                 onLongPress: () {
@@ -179,6 +181,8 @@ class HomeScreen extends StatelessWidget {
                   child: ShareRecordTile(
                     record: record,
                     onTap: () {
+                      // 检查文件是否存在，然后再显示预览对话框
+                      // ShareService会处理文件不存在的情况
                       ShareService().showPreviewDialog(context, record);
                     },
                     onLongPress: () {
@@ -234,130 +238,142 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showActionMenu(BuildContext context, ShareRecord record, AppProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('操作'),
-        children: [
-          SimpleDialogOption(
-            onPressed: () {
-              Navigator.pop(context);
-              _showRecordDetails(context, record);
-            },
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline),
-                SizedBox(width: 16),
-                Text('查看详情'),
-              ],
-            ),
-          ),
-          if (record.type == ShareType.image)
+    final shareService = ShareService();
+    
+    // 检查文件是否存在
+    shareService.isFileExists(record).then((fileExists) {
+      showDialog(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: const Text('操作'),
+          children: [
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ImagePreviewScreen(
-                      imagePath: record.sourcePath!,
-                    ),
-                  ),
-                );
+                _showRecordDetails(context, record);
               },
               child: const Row(
                 children: [
-                  Icon(Icons.image),
+                  Icon(Icons.info_outline),
                   SizedBox(width: 16),
-                  Text('查看大图'),
+                  Text('查看详情'),
                 ],
               ),
             ),
-          SimpleDialogOption(
-            onPressed: () {
-              Navigator.pop(context);
-              ShareService().showPreviewDialog(context, record);
-            },
-            child: const Row(
-              children: [
-                Icon(Icons.edit),
-                SizedBox(width: 16),
-                Text('编辑'),
-              ],
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              Navigator.pop(context);
-              ShareService().share(record);
-            },
-            child: const Row(
-              children: [
-                Icon(Icons.share),
-                SizedBox(width: 16),
-                Text('分享'),
-              ],
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              Navigator.pop(context);
-              provider.toggleRecordPin(record.id);
-            },
-            child: Row(
-              children: [
-                Icon(record.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
-                const SizedBox(width: 16),
-                Text(record.isPinned ? '取消固定' : '固定'),
-              ],
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () async {
-              Navigator.pop(context);
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('确认删除'),
-                  content: const Text('确定要删除这条记录吗？'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('取消'),
+            // 只有在文件存在时才显示查看大图选项
+            if (record.type == ShareType.image && record.sourcePath != null && fileExists)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ImagePreviewScreen(
+                        imagePath: record.sourcePath!,
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('删除'),
-                    ),
+                  );
+                },
+                child: const Row(
+                  children: [
+                    Icon(Icons.image),
+                    SizedBox(width: 16),
+                    Text('查看大图'),
                   ],
                 ),
-              );
+              ),
+            // 只有在文件存在时才显示编辑选项
+            if (fileExists)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ShareService().showPreviewDialog(context, record);
+                },
+                child: const Row(
+                  children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 16),
+                    Text('编辑'),
+                  ],
+                ),
+              ),
+            // 只有在文件存在时才显示分享选项
+            if (fileExists)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ShareService().share(record);
+                },
+                child: const Row(
+                  children: [
+                    Icon(Icons.share),
+                    SizedBox(width: 16),
+                    Text('分享'),
+                  ],
+                ),
+              ),
+            // 只有在文件存在时才显示固定/取消固定选项
+            if (fileExists)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context);
+                  provider.toggleRecordPin(record.id);
+                },
+                child: Row(
+                  children: [
+                    Icon(record.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+                    const SizedBox(width: 16),
+                    Text(record.isPinned ? '取消固定' : '固定'),
+                  ],
+                ),
+              ),
+            SimpleDialogOption(
+              onPressed: () async {
+                Navigator.pop(context);
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('确认删除'),
+                    content: const Text('确定要删除这条记录吗？'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('删除'),
+                      ),
+                    ],
+                  ),
+                );
 
-              if (confirmed == true) {
-                await provider.deleteShareRecord(record.id);
-                if (record.type == ShareType.image && record.sourcePath != null) {
-                  try {
-                    final file = File(record.sourcePath!);
-                    if (await file.exists()) {
-                      await file.delete();
+                if (confirmed == true) {
+                  // 先删除源文件
+                  if (record.sourcePath != null) {
+                    try {
+                      // 使用FileUtils工具类删除文件及其临时副本
+                      await FileUtils.deleteFile(record.sourcePath!);
+                    } catch (e) {
+                      debugPrint('Error deleting source file: $e');
                     }
-                  } catch (e) {
-                    debugPrint('Error deleting image file: $e');
                   }
+                  // 然后删除记录
+                  await provider.deleteShareRecord(record.id);
                 }
-              }
-            },
-            child: const Row(
-              children: [
-                Icon(Icons.delete, color: Colors.red),
-                SizedBox(width: 16),
-                Text('删除', style: TextStyle(color: Colors.red)),
-              ],
+              },
+              child: const Row(
+                children: [
+                  Icon(Icons.delete, color: Colors.red),
+                  SizedBox(width: 16),
+                  Text('删除', style: TextStyle(color: Colors.red)),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   void _showRecordDetails(BuildContext context, ShareRecord record) {
