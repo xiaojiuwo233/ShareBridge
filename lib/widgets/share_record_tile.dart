@@ -25,14 +25,19 @@ class ShareRecordTile extends StatelessWidget {
     final shareService = ShareService();
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.only(left: 8, right: 0, bottom: 0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 0.5,
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildLeadingIcon(),
               const SizedBox(width: 16),
