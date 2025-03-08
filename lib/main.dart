@@ -190,6 +190,7 @@ class _MainScreenState extends State<MainScreen> {
           style: TextStyle(color: colorScheme.primary),
         ),
         centerTitle: true,
+        shadowColor: colorScheme.primary,
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -202,13 +203,15 @@ class _MainScreenState extends State<MainScreen> {
             _currentIndex = index;
           });
         },
-        destinations: const [
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        animationDuration: const Duration(milliseconds: 400),
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.timeline),
+            icon: Icon(Icons.timeline, color: _currentIndex == 0 ? colorScheme.primary : null),
             label: '时间线',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.settings, color: _currentIndex == 1 ? colorScheme.primary : null),
             label: '设置',
           ),
         ],

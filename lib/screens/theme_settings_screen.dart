@@ -44,7 +44,11 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('主题设置'),
+        title: Text(
+          '主题设置',
+          style: TextStyle(color: colorScheme.primary),
+        ),
+        shadowColor: colorScheme.primary,
       ),
       body: Consumer<AppProvider>(
         builder: (context, provider, child) {

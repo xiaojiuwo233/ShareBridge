@@ -32,35 +32,50 @@ class MainActivity: FlutterActivity() {
             // 尝试获取系统主题色
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 try {
-                    // 尝试先使用动态颜色
-                    val dynamicColorResId = android.R.color.system_accent1_500
-                    val dynamicColor = resources.getColor(dynamicColorResId, theme)
-                    Log.d("MaterialYou", "System accent color detected: ${colorToHex(dynamicColor)}")
-                    return colorToHex(dynamicColor)
-                } catch (e: Exception) {
-                    Log.e("MaterialYou", "Failed to get system_accent1_500: ${e.message}")
+                    // 尝试先使用动态颜色，Android 12+ (API 31+)
+                    val dynamicColors = listOf(
+                        android.R.color.system_accent1_500,
+                        android.R.color.system_accent2_500,
+                        android.R.color.system_accent3_500
+                    )
                     
-                    // 尝试其他资源ID
-                    try {
-                        val accentId = resources.getIdentifier("accent_device_default", "color", "android")
-                        if (accentId != 0) {
-                            val accentColor = resources.getColor(accentId, theme)
-                            Log.d("MaterialYou", "Using accent_device_default: ${colorToHex(accentColor)}")
-                            return colorToHex(accentColor)
+                    // 遍历尝试获取可用的动态颜色
+                    for (colorResId in dynamicColors) {
+                        try {
+                            val dynamicColor = resources.getColor(colorResId, theme)
+                            Log.d("MaterialYou", "System accent color detected: ${colorToHex(dynamicColor)}")
+                            return colorToHex(dynamicColor)
+                        } catch (e: Exception) {
+                            continue // 尝试下一个颜色
                         }
-                    } catch (e2: Exception) {
-                        Log.e("MaterialYou", "Failed to get accent_device_default: ${e2.message}")
                     }
                     
-                    // 最后尝试应用主题的colorPrimary
-                    val typedValue = android.util.TypedValue()
-                    theme.resolveAttribute(android.R.attr.colorPrimary, typedValue, true)
-                    val colorPrimary = typedValue.data
-                    Log.d("MaterialYou", "Using theme colorPrimary: ${colorToHex(colorPrimary)}")
-                    return colorToHex(colorPrimary)
+                    // 如果上面的方法都失败，尝试使用colorPrimary
+                    Log.e("MaterialYou", "Failed to get system_accent colors, trying alternatives")
+                } catch (e: Exception) {
+                    Log.e("MaterialYou", "Failed to get system accents: ${e.message}")
                 }
+                
+                // 尝试其他资源ID
+                try {
+                    val accentId = resources.getIdentifier("accent_device_default", "color", "android")
+                    if (accentId != 0) {
+                        val accentColor = resources.getColor(accentId, theme)
+                        Log.d("MaterialYou", "Using accent_device_default: ${colorToHex(accentColor)}")
+                        return colorToHex(accentColor)
+                    }
+                } catch (e2: Exception) {
+                    Log.e("MaterialYou", "Failed to get accent_device_default: ${e2.message}")
+                }
+                
+                // 最后尝试应用主题的colorPrimary
+                val typedValue = android.util.TypedValue()
+                theme.resolveAttribute(android.R.attr.colorPrimary, typedValue, true)
+                val colorPrimary = typedValue.data
+                Log.d("MaterialYou", "Using theme colorPrimary: ${colorToHex(colorPrimary)}")
+                return colorToHex(colorPrimary)
             } else {
-                // 尝试从壁纸获取主色调
+                // 尝试从壁纸获取主色调 (Android 8.1+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                     try {
                         val wallpaperManager = WallpaperManager.getInstance(this)
@@ -72,6 +87,17 @@ class MainActivity: FlutterActivity() {
                     } catch (e: Exception) {
                         Log.e("MainActivity", "Error getting wallpaper color: ${e.message}")
                     }
+                }
+                
+                // 尝试获取主题的colorAccent
+                try {
+                    val typedValue = android.util.TypedValue()
+                    theme.resolveAttribute(android.R.attr.colorAccent, typedValue, true)
+                    val accentColor = typedValue.data
+                    Log.d("MaterialYou", "Using theme colorAccent: ${colorToHex(accentColor)}")
+                    return colorToHex(accentColor)
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error getting colorAccent: ${e.message}")
                 }
                 
                 // 如果所有尝试都失败，使用默认色

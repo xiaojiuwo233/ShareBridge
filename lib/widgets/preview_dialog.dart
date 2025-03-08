@@ -66,6 +66,8 @@ class _PreviewDialogState extends State<PreviewDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Dialog(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -73,11 +75,12 @@ class _PreviewDialogState extends State<PreviewDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               'ShareBridge',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
               ),
               textAlign: TextAlign.center,
             ),
