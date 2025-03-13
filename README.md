@@ -2,6 +2,8 @@
 
 一个强大的Android分享中转工具，可以接收来自任何应用的分享内容，处理后再通过系统分享菜单进行二次分享。
 
+![ShareBridge](./docs/img/intro.png)
+
 # 初期开发中，功能暂不完善
 
 ## 特性
@@ -20,7 +22,7 @@
 
 ## 安装方式
 
-1. 从Github Releases下载
+1. 从[Github Releases](https://github.com/xiaojiuwo233/sharebridge/releases)下载
 2. 或从源代码构建：
    ```bash
    git clone https://github.com/xiaojiuwo233/sharebridge.git
