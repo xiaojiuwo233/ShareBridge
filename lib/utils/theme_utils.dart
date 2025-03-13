@@ -11,23 +11,38 @@ class ThemeUtils {
   // 默认颜色
   static const Color _defaultColor = Color(0xFF2196F3); // 蓝色
   
-  // 缓存系统颜色
-  static Color? _systemColor;
+  // 缓存系统颜色 (分别缓存亮色和暗色模式)
+  static Color? _systemLightColor;
+  static Color? _systemDarkColor;
   
   /// 尝试从平台获取系统主题色
-  static Future<Color> getSystemThemeColor() async {
-    if (_systemColor != null) {
-      return _systemColor!;
+  static Future<Color> getSystemThemeColor({Brightness brightness = Brightness.light}) async {
+    // 检查缓存
+    if (brightness == Brightness.light && _systemLightColor != null) {
+      return _systemLightColor!;
+    } else if (brightness == Brightness.dark && _systemDarkColor != null) {
+      return _systemDarkColor!;
     }
     
     try {
-      // 尝试获取系统主题色
-      final colorString = await _channel.invokeMethod('getSystemColor') as String?;
+      // 向原生端请求系统主题色，传递当前亮度模式
+      final colorString = await _channel.invokeMethod('getSystemColor', {
+        'isDarkMode': brightness == Brightness.dark,
+      }) as String?;
+      
       if (colorString != null && colorString.isNotEmpty) {
         final colorValue = int.tryParse(colorString.replaceFirst('#', 'FF'), radix: 16);
         if (colorValue != null) {
-          _systemColor = Color(colorValue);
-          return _systemColor!;
+          final color = Color(colorValue);
+          
+          // 根据亮度模式保存缓存
+          if (brightness == Brightness.light) {
+            _systemLightColor = color;
+          } else {
+            _systemDarkColor = color;
+          }
+          
+          return color;
         }
       }
     } catch (e) {
@@ -56,7 +71,7 @@ class ThemeUtils {
       // 如果 dynamic_color 库无法获取色彩方案，尝试使用原生通道
       if (dynamicColorScheme == null) {
         try {
-          final systemColor = await getSystemThemeColor();
+          final systemColor = await getSystemThemeColor(brightness: brightness);
           return _buildThemeWithSeedColor(systemColor, brightness);
         } catch (e) {
           debugPrint('Error creating theme with system color: $e');

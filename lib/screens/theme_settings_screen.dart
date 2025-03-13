@@ -48,7 +48,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
           '主题设置',
           style: TextStyle(color: colorScheme.primary),
         ),
-        shadowColor: colorScheme.primary,
+        centerTitle: true,
       ),
       body: Consumer<AppProvider>(
         builder: (context, provider, child) {

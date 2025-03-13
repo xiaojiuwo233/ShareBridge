@@ -72,30 +72,48 @@ class MyApp extends StatelessWidget {
             
             // 加载完成后使用动态主题
             final lightTheme = snapshot.data;
-            final darkTheme = ThemeUtils.getDarkTheme(
-                seedColor: provider.settings.themeColorMode == ThemeColorMode.custom
-                    ? provider.settings.customThemeColor
-                    : null);
             
-            return MaterialApp(
-              title: 'ShareBridge',
-              theme: lightTheme,
-              darkTheme: darkTheme,
-              themeMode: provider.settings.themeMode,
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('zh'),
-                Locale('en'),
-              ],
-              locale: provider.settings.selectedLanguage != null
-                  ? Locale(provider.settings.selectedLanguage!)
-                  : null,
-              home: const MainScreen(),
-              debugShowCheckedModeBanner: false, // 移除调试标签
+            return FutureBuilder<ThemeData>(
+              future: provider.settings.themeColorMode == ThemeColorMode.system
+                ? ThemeUtils.createTheme(
+                    useDynamicColor: true,
+                    seedColor: const Color(0xFF2196F3),
+                    brightness: Brightness.dark,
+                  )
+                : ThemeUtils.createTheme(
+                    useDynamicColor: false,
+                    seedColor: provider.settings.themeColorMode == ThemeColorMode.custom
+                        ? provider.settings.customThemeColor
+                        : const Color(0xFF2196F3),
+                    brightness: Brightness.dark,
+                  ),
+              builder: (context, darkSnapshot) {
+                // 如果深色主题还在加载中，使用默认深色主题
+                final darkTheme = darkSnapshot.hasData 
+                    ? darkSnapshot.data
+                    : ThemeUtils.getDarkTheme();
+                
+                return MaterialApp(
+                  title: 'ShareBridge',
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  themeMode: provider.settings.themeMode,
+                  localizationsDelegates: const [
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  supportedLocales: const [
+                    Locale('zh'),
+                    Locale('en'),
+                  ],
+                  locale: provider.settings.selectedLanguage != null
+                      ? Locale(provider.settings.selectedLanguage!)
+                      : null,
+                  home: const MainScreen(),
+                  debugShowCheckedModeBanner: false, // 移除调试标签
+                );
+              },
             );
           },
         );
