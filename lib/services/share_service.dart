@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path/path.dart' as path;
-import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
 import '../models/share_record.dart';
 import '../providers/app_provider.dart';
-import '../widgets/preview_dialog.dart';
 import '../utils/file_utils.dart';
+import '../widgets/preview_dialog.dart';
+import 'package:provider/provider.dart';
+import '../services/firebase_service.dart';
 
 class ShareService {
   // 单例模式
@@ -24,6 +27,8 @@ class ShareService {
   
   // 全局 context
   BuildContext? _globalContext;
+  
+  final FirebaseService _firebaseService = FirebaseService();
   
   // 设置全局 context
   void setGlobalContext(BuildContext context) {
@@ -75,13 +80,13 @@ class ShareService {
     debugPrint('Persisting image: $sourcePath');
     try {
       final docsDir = await FileUtils.documentsDir;
-      final fileName = path.basename(sourcePath);
+      final fileName = p.basename(sourcePath);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final persistedFileName = '${path.basenameWithoutExtension(fileName)}_$timestamp${path.extension(fileName)}';
-      final targetPath = path.join(docsDir.path, 'images', persistedFileName);
+      final persistedFileName = '${p.basenameWithoutExtension(fileName)}_$timestamp${p.extension(fileName)}';
+      final targetPath = p.join(docsDir.path, 'images', persistedFileName);
       
       // 创建images目录
-      final imageDir = Directory(path.join(docsDir.path, 'images'));
+      final imageDir = Directory(p.join(docsDir.path, 'images'));
       if (!await imageDir.exists()) {
         await imageDir.create(recursive: true);
       }
@@ -206,36 +211,46 @@ class ShareService {
 
   // 执行分享
   Future<void> share(ShareRecord record) async {
-    debugPrint('Sharing record: ${record.type}, ${record.content}');
     try {
-      switch (record.type) {
-        case ShareType.text:
-        case ShareType.url:
-          final content = record.editedContent ?? record.content;
-          if (content.isEmpty) {
-            throw Exception('Empty content');
-          }
-          await Share.share(content);
-          debugPrint('Shared text/url successfully');
-          break;
-        case ShareType.image:
-        case ShareType.file:
-          if (record.sourcePath == null) {
-            throw Exception('No source path');
-          }
-          final file = File(record.sourcePath!);
-          if (!await file.exists()) {
-            throw Exception('File not found: ${record.sourcePath}');
-          }
+      if (record.type == ShareType.image && record.sourcePath != null) {
+        final file = File(record.sourcePath!);
+        if (await file.exists()) {
           await Share.shareXFiles([XFile(record.sourcePath!)]);
-          debugPrint('Shared file successfully: ${record.sourcePath}');
-          break;
-        case ShareType.unknown:
-          throw Exception('Unknown share type');
+          
+          // 记录分享事件
+          _firebaseService.logShare(
+            contentType: "image",
+            itemId: record.id,
+          );
+        }
+      } else if (record.type == ShareType.file && record.sourcePath != null) {
+        final file = File(record.sourcePath!);
+        if (await file.exists()) {
+          await Share.shareXFiles([XFile(record.sourcePath!)]);
+          
+          // 记录分享事件
+          _firebaseService.logShare(
+            contentType: "file",
+            itemId: record.id,
+          );
+        }
+      } else if (record.type == ShareType.text || record.type == ShareType.url) {
+        final text = record.displayContent;
+        await Share.share(text);
+        
+        // 记录分享事件
+        _firebaseService.logShare(
+          contentType: record.type == ShareType.url ? "url" : "text",
+          itemId: record.id,
+        );
       }
     } catch (e) {
-      debugPrint('Share error: $e');
-      rethrow; // 向上传递错误以便UI处理
+      debugPrint('Error sharing: $e');
+      if (_globalContext != null) {
+        ScaffoldMessenger.of(_globalContext!).showSnackBar(
+          SnackBar(content: Text('分享失败: $e')),
+        );
+      }
     }
   }
 

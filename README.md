@@ -29,6 +29,8 @@
    flutter build apk --release
    ```
 
+- 项目使用[Google Analysis](https://analytics.google.com/) 进行数据分析, 构建前请先配置firebase
+
 ## 使用方法
 
 1. 在任意应用中，点击分享按钮

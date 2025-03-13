@@ -21,6 +21,9 @@ class AppSettings {
   final String? selectedLanguage; // 选择的语言
   final ThemeColorMode themeColorMode; // 主题颜色模式
   final Color customThemeColor; // 自定义主题色
+  final bool homeAppBarElevated; // 主页AppBar是否有阴影 (已弃用，总是为true)
+  final bool homeAppBarColored; // 主页AppBar是否有背景色 (已弃用，总是为false)
+  final String? customAppBarTitle; // 自定义AppBar标题文本
   
   const AppSettings({
     this.themeMode = ThemeMode.system,
@@ -30,6 +33,9 @@ class AppSettings {
     this.selectedLanguage,
     this.themeColorMode = ThemeColorMode.system,
     this.customThemeColor = const Color(0xFF2196F3), // 默认蓝色
+    this.homeAppBarElevated = true, // 默认有阴影（始终为true）
+    this.homeAppBarColored = false, // 默认无背景色（始终为false）
+    this.customAppBarTitle, // 自定义AppBar标题
   });
 
   /// 从JSON创建AppSettings实例
@@ -42,6 +48,9 @@ class AppSettings {
     final selectedLanguage = json['selectedLanguage'] as String?;
     final themeColorModeStr = json['themeColorMode'] as String?;
     final customThemeColorInt = json['customThemeColor'] as int?;
+    final homeAppBarElevated = json['homeAppBarElevated'] as bool?;
+    final homeAppBarColored = json['homeAppBarColored'] as bool?;
+    final customAppBarTitle = json['customAppBarTitle'] as String?;
 
     // 主题模式验证
     ThemeMode themeMode;
@@ -96,6 +105,9 @@ class AppSettings {
       selectedLanguage: validatedLanguage,
       themeColorMode: themeColorMode,
       customThemeColor: customThemeColor,
+      homeAppBarElevated: homeAppBarElevated ?? true,
+      homeAppBarColored: homeAppBarColored ?? false,
+      customAppBarTitle: customAppBarTitle,
     );
   }
 
@@ -109,6 +121,9 @@ class AppSettings {
       'selectedLanguage': selectedLanguage,
       'themeColorMode': themeColorMode.toString(),
       'customThemeColor': customThemeColor.value,
+      'homeAppBarElevated': homeAppBarElevated,
+      'homeAppBarColored': homeAppBarColored,
+      'customAppBarTitle': customAppBarTitle,
     };
   }
 
@@ -121,6 +136,9 @@ class AppSettings {
     String? selectedLanguage,
     ThemeColorMode? themeColorMode,
     Color? customThemeColor,
+    bool? homeAppBarElevated,
+    bool? homeAppBarColored,
+    String? customAppBarTitle,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -130,6 +148,9 @@ class AppSettings {
       selectedLanguage: selectedLanguage ?? this.selectedLanguage,
       themeColorMode: themeColorMode ?? this.themeColorMode,
       customThemeColor: customThemeColor ?? this.customThemeColor,
+      homeAppBarElevated: homeAppBarElevated ?? this.homeAppBarElevated,
+      homeAppBarColored: homeAppBarColored ?? this.homeAppBarColored,
+      customAppBarTitle: customAppBarTitle ?? this.customAppBarTitle,
     );
   }
 
@@ -144,6 +165,9 @@ class AppSettings {
         other.selectedLanguage == selectedLanguage &&
         other.themeColorMode == themeColorMode &&
         other.customThemeColor == customThemeColor &&
+        other.homeAppBarElevated == homeAppBarElevated &&
+        other.homeAppBarColored == homeAppBarColored &&
+        other.customAppBarTitle == customAppBarTitle &&
         _mapsEqual(other.shareProviders, shareProviders);
   }
 
@@ -156,6 +180,9 @@ class AppSettings {
         selectedLanguage,
         themeColorMode,
         customThemeColor,
+        homeAppBarElevated,
+        homeAppBarColored,
+        customAppBarTitle,
         Object.hashAll(shareProviders.entries),
       );
 

@@ -5,12 +5,26 @@ import 'package:intl/intl.dart';
 import '../providers/app_provider.dart';
 import '../models/share_record.dart';
 import '../services/share_service.dart';
+import '../services/firebase_service.dart';
 import '../widgets/share_record_tile.dart';
 import '../widgets/image_preview_screen.dart';
 import '../utils/file_utils.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseService _firebaseService = FirebaseService();
+  
+  @override
+  void initState() {
+    super.initState();
+    _firebaseService.setCurrentScreen(screenName: '主页/时间线');
+  }
 
   @override
   Widget build(BuildContext context) {

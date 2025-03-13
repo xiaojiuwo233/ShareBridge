@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'providers/app_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/share_service.dart';
+import 'services/firebase_service.dart';
 import 'utils/theme_utils.dart';
 import 'models/app_settings.dart';
+import 'package:flutter/rendering.dart';
 
 // 全局错误处理
 void _handleError(Object error, StackTrace stack) {
@@ -24,6 +27,10 @@ Future<void> main() async {
     _handleError(details.exception, details.stack ?? StackTrace.empty);
   };
 
+  // 初始化Firebase
+  final firebaseService = FirebaseService();
+  await firebaseService.initialize();
+  
   final appProvider = AppProvider();
   await appProvider.init();
 
@@ -33,6 +40,9 @@ Future<void> main() async {
     appProvider.setCurrentShare(record);
   };
   shareService.init();
+
+  // 记录应用打开事件
+  await firebaseService.logAppOpen();
 
   runApp(
     ChangeNotifierProvider.value(
@@ -158,6 +168,7 @@ class _MainScreenState extends State<MainScreen> {
   final ShareService _shareService = ShareService();
   bool _isProcessingShare = false;
 
+  // 移除静态列表，改为动态创建Widget
   final List<Widget> _screens = const [
     HomeScreen(),
     SettingsScreen(),
@@ -202,18 +213,9 @@ class _MainScreenState extends State<MainScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _currentIndex == 0 ? 'ShareBridge' : '设置',
-          style: TextStyle(color: colorScheme.primary),
-        ),
-        centerTitle: true,
-        shadowColor: colorScheme.primary,
-      ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      appBar: _buildAppBar(context, _currentIndex),
+      // 不使用IndexedStack，直接根据索引显示对应页面
+      body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
@@ -235,5 +237,59 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
     );
+  }
+  
+  // 为每个导航项创建独立的AppBar
+  PreferredSizeWidget _buildAppBar(BuildContext context, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final provider = Provider.of<AppProvider>(context);
+    
+    if (index == 0) { // 时间线
+      // 修改标题处理逻辑，处理特殊标记值
+      String appTitle = 'ShareBridge';
+      if (provider.settings.customAppBarTitle != null && 
+          provider.settings.customAppBarTitle != "DEFAULT_TITLE" && 
+          provider.settings.customAppBarTitle!.isNotEmpty) {
+        appTitle = provider.settings.customAppBarTitle!;
+      }
+      
+      return AppBar(
+        title: Text(
+          appTitle,
+          style: TextStyle(color: colorScheme.primary),
+        ),
+        centerTitle: true,
+        elevation: 0, // 默认无阴影
+        scrolledUnderElevation: 4, // 始终在滚动时显示阴影
+        backgroundColor: colorScheme.surface, // 使用与设置页面相同的背景色
+        // 修复通知栏颜色显示问题
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: colorScheme.brightness == Brightness.dark 
+              ? Brightness.light 
+              : Brightness.dark,
+          statusBarBrightness: colorScheme.brightness,
+        ),
+      );
+    } else { // 设置
+      return AppBar(
+        title: Text(
+          '设置',
+          style: TextStyle(color: colorScheme.primary),
+        ),
+        centerTitle: true,
+        elevation: 0, // 默认无阴影
+        scrolledUnderElevation: 4, // 滚动时显示阴影
+        backgroundColor: colorScheme.surface, // 确保背景色统一
+        // 修复通知栏颜色显示问题
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: colorScheme.brightness == Brightness.dark 
+              ? Brightness.light 
+              : Brightness.dark,
+          statusBarBrightness: colorScheme.brightness,
+        ),
+      );
+    }
   }
 }

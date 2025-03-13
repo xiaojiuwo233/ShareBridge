@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_settings.dart';
 import '../models/share_record.dart';
 import '../utils/file_utils.dart';
+import '../services/firebase_service.dart';
 
 class AppProvider with ChangeNotifier {
   static const String _settingsKey = 'app_settings';
@@ -15,6 +16,7 @@ class AppProvider with ChangeNotifier {
   List<ShareRecord> _history;
   ShareRecord? _currentShare;
   bool _isInitialized = false;
+  final FirebaseService _firebaseService = FirebaseService();
 
   AppProvider()
       : _settings = const AppSettings(),
@@ -141,12 +143,15 @@ class AppProvider with ChangeNotifier {
     if (_settings.themeMode == mode) return;
     _settings = _settings.copyWith(themeMode: mode);
     await _saveSettings();
+    _firebaseService.logSettingsChange(
+      settingName: 'theme_mode',
+      settingValue: mode.toString(),
+    );
     notifyListeners();
   }
 
-  // 更新主题颜色模式
+  // 更新主题色模式
   Future<void> updateThemeColorMode(ThemeColorMode mode) async {
-    if (_settings.themeColorMode == mode) return;
     _settings = _settings.copyWith(themeColorMode: mode);
     await _saveSettings();
     notifyListeners();
@@ -154,7 +159,6 @@ class AppProvider with ChangeNotifier {
 
   // 更新自定义主题色
   Future<void> updateCustomThemeColor(Color color) async {
-    if (_settings.customThemeColor == color) return;
     _settings = _settings.copyWith(customThemeColor: color);
     await _saveSettings();
     notifyListeners();
@@ -162,26 +166,39 @@ class AppProvider with ChangeNotifier {
 
   // 更新预览模式
   Future<void> updatePreviewMode(PreviewMode mode) async {
-    if (_settings.previewMode == mode) return;
     _settings = _settings.copyWith(previewMode: mode);
     await _saveSettings();
     notifyListeners();
   }
 
-  // 更新语言设置
+  // 更新语言
   Future<void> updateLanguage(String? languageCode) async {
-    if (_settings.selectedLanguage == languageCode) return;
     _settings = _settings.copyWith(selectedLanguage: languageCode);
     await _saveSettings();
     notifyListeners();
   }
 
-  // 更新分享提供者状态
+  // 更新分享提供者
+  Future<void> updateShareProviders(Map<String, bool> providers) async {
+    final newProviders = Map<String, bool>.from(_settings.shareProviders)
+      ..addAll(providers);
+    _settings = _settings.copyWith(shareProviders: newProviders);
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  // 更新单个分享提供者状态
   Future<void> updateShareProvider(String provider, bool enabled) async {
-    if (_settings.shareProviders[provider] == enabled) return;
     final Map<String, bool> newProviders = Map.from(_settings.shareProviders);
     newProviders[provider] = enabled;
     _settings = _settings.copyWith(shareProviders: newProviders);
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  // 通用更新设置的私有方法
+  Future<void> _updateSettings(AppSettings newSettings) async {
+    _settings = newSettings;
     await _saveSettings();
     notifyListeners();
   }
@@ -270,5 +287,27 @@ class AppProvider with ChangeNotifier {
     _history.removeWhere((record) => !record.isPinned);
     await _saveHistory();
     notifyListeners();
+  }
+
+  // 更新主页AppBar阴影设置
+  Future<void> updateHomeAppBarElevation(bool elevated) async {
+    final newSettings = settings.copyWith(homeAppBarElevated: elevated);
+    await _updateSettings(newSettings);
+  }
+
+  // 更新主页AppBar背景色设置
+  Future<void> updateHomeAppBarColor(bool colored) async {
+    final newSettings = settings.copyWith(homeAppBarColored: colored);
+    await _updateSettings(newSettings);
+  }
+
+  // 更新自定义AppBar标题
+  Future<void> updateCustomAppBarTitle(String? title) async {
+    final newSettings = settings.copyWith(customAppBarTitle: title);
+    await _updateSettings(newSettings);
+    _firebaseService.logSettingsChange(
+      settingName: 'custom_app_bar_title',
+      settingValue: title ?? 'default',
+    );
   }
 } 

@@ -4,8 +4,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/app_provider.dart';
 import '../models/app_settings.dart';
+import '../services/firebase_service.dart';
 import 'share_providers_screen.dart';
 import 'theme_settings_screen.dart';
+import 'app_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,11 +18,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = '1.0.0';
+  final FirebaseService _firebaseService = FirebaseService();
   
   @override
   void initState() {
     super.initState();
     _loadAppInfo();
+    _firebaseService.setCurrentScreen(screenName: '设置');
   }
   
   Future<void> _loadAppInfo() async {
@@ -48,6 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               '外观',
               [
                 _buildThemeSettingsButton(context),
+                _buildAppSettingsButton(context),
               ],
             ),
             _buildSettingsGroup(
@@ -67,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Icon(Icons.info_outline,
                       color: colorScheme.primary),
                   title: Text('关于', style: TextStyle(color: colorScheme.onSurface)),
-                  subtitle: Text('ShareBridge v$_appVersion', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                  subtitle: Text('ShareBridge beta v$_appVersion', style: TextStyle(color: colorScheme.onSurfaceVariant)),
                 ),
                 ListTile(
                   leading: Icon(Icons.code_outlined,
@@ -126,6 +131,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => const ThemeSettingsScreen(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAppSettingsButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return ListTile(
+      leading: Icon(Icons.settings_applications, color: colorScheme.primary),
+      title: const Text('应用设置'),
+      subtitle: const Text('自定义应用的界面样式'),
+      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AppSettingsScreen(),
           ),
         );
       },
