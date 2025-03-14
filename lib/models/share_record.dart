@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 /// 分享记录的类型枚举
 enum ShareType {

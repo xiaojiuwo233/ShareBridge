@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -55,15 +54,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              ...pinnedRecords.map((record) => ShareRecordTile(
-                record: record,
-                onTap: () {
-                  // 检查文件是否存在，ShareService会处理文件不存在的情况
-                  ShareService().showPreviewDialog(context, record);
-                },
-                onLongPress: () {
-                  _showActionMenu(context, record, provider);
-                },
+              ...pinnedRecords.map((record) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ShareRecordTile(
+                  record: record,
+                  onTap: () {
+                    // 检查文件是否存在，ShareService会处理文件不存在的情况
+                    ShareService().showPreviewDialog(context, record);
+                  },
+                  onLongPress: () {
+                    _showActionMenu(context, record, provider);
+                  },
+                ),
               )),
               const Divider(height: 32),
             ],

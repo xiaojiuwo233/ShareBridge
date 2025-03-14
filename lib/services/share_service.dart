@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path/path.dart' as p;
@@ -11,7 +9,7 @@ import '../providers/app_provider.dart';
 import '../utils/file_utils.dart';
 import '../widgets/preview_dialog.dart';
 import 'package:provider/provider.dart';
-import '../services/firebase_service.dart';
+import '../services/firebase_service.dart'; 
 
 class ShareService {
   // 单例模式

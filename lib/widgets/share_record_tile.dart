@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/share_record.dart';
-import '../providers/app_provider.dart';
-import '../services/share_service.dart';
 import '../utils/date_utils.dart' as app_date;
 import 'package:path/path.dart' as path;
 
@@ -21,8 +18,6 @@ class ShareRecordTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final shareService = ShareService();
 
     return Card(
       margin: const EdgeInsets.only(left: 8, right: 0, bottom: 0),
@@ -143,29 +138,5 @@ class ShareRecordTile extends StatelessWidget {
         );
       }
     );
-  }
-
-  Future<void> _showDeleteDialog(BuildContext context, AppProvider provider) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条记录吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      provider.deleteShareRecord(record.id);
-    }
   }
 } 
